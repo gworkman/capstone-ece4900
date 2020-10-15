@@ -4,10 +4,9 @@
 import time
 import struct
 import ubluetooth as bluetooth
-from machine import I2C
-from imu import MPU6050
 from micropython import const
 from ble_advertising import advertising_payload
+from uos import urandom
 
 # constants
 _IRQ_CENTRAL_CONNECT = const(1)
@@ -34,8 +33,6 @@ def bt_irq(event, data):
 
 
 # entrypoint
-i2c = I2C(0)
-imu = MPU6050(i2c)
 ble = bluetooth.BLE()
 ble.active(True)
 ble.irq(bt_irq)
@@ -58,6 +55,11 @@ ble.gap_advertise(500000, adv_data=payload)
 
 while True:
     for conn in connections:
-        xyz = imu.accel.xyz
-        ble.gatts_notify(conn, accel, struct.pack('<fff', *xyz))
+        # generate random values for testing
+        xyz = urandom(3)
+        x = ((xyz[0] / 256.0) - 0.5) * 10.0
+        y = ((xyz[1] / 256.0) - 0.5) * 10.0
+        z = ((xyz[2] / 256.0) - 0.5) * 10.0
+        ble.gatts_write(accel, struct.pack('<fff', x, y, z))
+        ble.gatts_notify(conn, accel)
     time.sleep_ms(100)
