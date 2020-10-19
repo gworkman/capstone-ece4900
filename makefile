@@ -8,11 +8,11 @@ flash4:
 
 flash: flash4
 
-load:
-	ampy --port $(port) put software/src/main.py
+put:
+	ampy --port $(port) put $(file)
 
 show:
-	ampy --port $(port) get main.py
+	ampy --port $(port) get $(file)
 
 list:
 	ampy --port $(port) ls
