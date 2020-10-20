@@ -1,4 +1,6 @@
 (sym_lib_table
   (lib (name ESP32-DEVKITC)(type Legacy)(uri ${KIPRJMOD}/libraries/ESP32-DEVKITC.lib)(options "")(descr ""))
   (lib (name TI_FDC)(type Legacy)(uri ${KIPRJMOD}/libraries/TI_FDC.lib)(options "")(descr ""))
+  (lib (name 5034800800)(type Legacy)(uri ${KIPRJMOD}/libraries/5034800800.lib)(options "")(descr ""))
+  (lib (name AP3429A)(type Legacy)(uri ${KIPRJMOD}/libraries/AP3429A.lib)(options "")(descr ""))
 )

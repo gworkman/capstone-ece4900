@@ -1,3 +1,4 @@
 (fp_lib_table
   (lib (name external_footprints)(type KiCad)(uri ${KIPRJMOD}/libraries)(options "")(descr ""))
+  (lib (name TSOT25)(type KiCad)(uri ${KIPRJMOD}/libraries/TSOT25.pretty)(options "")(descr ""))
 )
