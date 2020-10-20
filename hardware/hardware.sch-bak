@@ -985,4 +985,40 @@ Wire Wire Line
 	3300 4950 3100 4950
 Wire Wire Line
 	3500 4300 4100 4300
+Text Label 4400 2550 2    50   ~ 0
+IMU_INT
+Wire Wire Line
+	4400 2550 4100 2550
+Text Label 4400 2450 2    50   ~ 0
+CAP_INT
+Wire Wire Line
+	4400 2450 4100 2450
+Text Label 4700 1950 2    50   ~ 0
+CAP_SHUTDOWN
+Wire Wire Line
+	4700 1950 4100 1950
+Text Label 2050 2450 0    50   ~ 0
+ACOU_INT
+Text Label 2050 2250 0    50   ~ 0
+ACOU_PROG
+Wire Wire Line
+	2050 2250 2500 2250
+Text Label 2050 2350 0    50   ~ 0
+~ACOU_RST
+Wire Wire Line
+	2050 2450 2500 2450
+Wire Wire Line
+	2050 2350 2500 2350
+Text Label 2050 2150 0    50   ~ 0
+LED
+Wire Wire Line
+	2050 2150 2500 2150
+Text Label 2050 2050 0    50   ~ 0
+1V8_EN
+Wire Wire Line
+	2050 2050 2500 2050
+Text Notes 1450 1000 0    50   ~ 0
+Pins 34-39 input only,\nADC function okay
+Text Notes 4200 900  0    50   ~ 0
+Avoid using pins below #15\nhttps://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 $EndSCHEMATC
