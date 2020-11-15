@@ -4,7 +4,10 @@
 import time
 import struct
 import ubluetooth as bluetooth
+import machine
+import esp32
 from machine import I2C
+from machine import Pin
 from imu import MPU6050
 from micropython import const
 from ble_advertising import advertising_payload
@@ -12,9 +15,10 @@ from ble_advertising import advertising_payload
 # constants
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
+THIRTY_SECONDS = const(30000)
+TEN_SECONDS = const(10000)
 
 # functions
-
 
 def bt_irq(event, data):
     if event == _IRQ_CENTRAL_CONNECT:
@@ -56,8 +60,24 @@ connections = set()
 payload = advertising_payload(name='Bosu Ballers')
 ble.gap_advertise(500000, adv_data=payload)
 
+#wake pin
+wakepin = Pin(14, Pin.IN, Pin.PULL_DOWN)
+esp32.wake_on_ext0(pin = wakepin, level = esp32.WAKEUP_ANY_HIGH)
+hasConnection = False
+print("hello world")
+
+deadline = time.ticks_add(time.ticks_ms(), THIRTY_SECONDS)
 while True:
+    #Run if there is a connection, then recheck to see if connection was dropped. If dropped, set timer before deepsleep
+    if hasConnection:
+        hasConnection = conn in connections
+        if not hasConnection:
+            deadline = time.ticks_add(time.ticks_ms(),TEN_SECONDS)
     for conn in connections:
+        hasConnection = True
         xyz = imu.accel.xyz
         ble.gatts_notify(conn, accel, struct.pack('<fff', *xyz))
-    time.sleep_ms(100)
+    time.sleep_ms(250)
+    if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
+        print("Going to sleep")
+        machine.deepsleep()
