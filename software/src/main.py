@@ -6,8 +6,7 @@ import struct
 import ubluetooth as bluetooth
 import machine
 import esp32
-from machine import I2C
-from machine import Pin
+from machine import I2C, Pin, ADC
 from imu import MPU6050
 from micropython import const
 from ble_advertising import advertising_payload
@@ -50,7 +49,7 @@ def pin_sleep(p):
 i2c = I2C(0)
 imu = MPU6050(i2c)
 ble = bluetooth.BLE()
-adc = machine.ADC(Pin(34))
+adc = ADC(Pin(34))
 ble.active(True)
 ble.irq(bt_irq)
 ble.config(gap_name='Bosu')
@@ -102,10 +101,10 @@ while True:
         hasConnection = True
         accel_xyz = imu.accel.xyz
         gyro_xyz = imu.gyro.xyz
-        force = adc.read()
+        force_val = adc.read()
         ble.gatts_write(accel, struct.pack('<fff', *accel_xyz))
         ble.gatts_write(gyro, struct.pack('<fff', *gyro_xyz))
-        ble.gatts_write(force, struct.pack('<H', force))
+        ble.gatts_write(force, struct.pack('<H', force_val))
         ble.gatts_notify(conn, accel)
         ble.gatts_notify(conn, gyro)
         ble.gatts_notify(conn, force)
