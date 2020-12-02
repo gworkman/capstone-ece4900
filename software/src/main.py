@@ -50,6 +50,7 @@ def pin_sleep(p):
 i2c = I2C(0)
 imu = MPU6050(i2c)
 ble = bluetooth.BLE()
+adc = machine.ADC(Pin(34))
 ble.active(True)
 ble.irq(bt_irq)
 ble.config(gap_name='Bosu')
@@ -60,9 +61,19 @@ ACCEL_UUID = bluetooth.UUID('7ED5A5BC-8013-4753-B199-0A364D52E5DE')
 ACCEL_CHAR = (bluetooth.UUID('F477FD95-41F0-4C73-9093-5DA7DC624DF0'),
               bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
 ACCEL_SERVICE = (ACCEL_UUID, (ACCEL_CHAR,),)
-SERVICES = (ACCEL_SERVICE,)
 
-((accel,),) = ble.gatts_register_services(SERVICES)
+GYRO_UUID = bluetooth.UUID('a29c1085-11cb-4643-8ddc-19883e67afeb')
+GYRO_CHAR = (bluetooth.UUID('495d7e2c-a9b1-42ab-ab3a-af75dcefca06'),
+              bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
+GYRO_SERVICE = (GYRO_UUID, (GYRO_CHAR,),)
+
+FORCE_UUID = bluetooth.UUID('e55a7bcb-e58e-4582-a439-adfc2f0b14b9')
+FORCE_CHAR = (bluetooth.UUID('fed668b3-5471-4797-a2e5-c0e4760b7321'),
+              bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
+FORCE_SERVICE = (FORCE_UUID, (FORCE_CHAR,),)
+
+SERVICES = (ACCEL_SERVICE,GYRO_SERVICE,FORCE_SERVICE,)
+((accel,),(gyro,),(force,),) = ble.gatts_register_services(SERVICES)
 
 connections = set()
 
@@ -89,9 +100,15 @@ while True:
             deadline = time.ticks_add(time.ticks_ms(),TEN_SECONDS)
     for conn in connections:
         hasConnection = True
-        xyz = imu.accel.xyz
-        ble.gatts_write(accel, struct.pack('<fff', *xyz))
+        accel_xyz = imu.accel.xyz
+        gyro_xyz = imu.gyro.xyz
+        force = adc.read()
+        ble.gatts_write(accel, struct.pack('<fff', *accel_xyz))
+        ble.gatts_write(gyro, struct.pack('<fff', *gyro_xyz))
+        ble.gatts_write(force, struct.pack('<H', force))
         ble.gatts_notify(conn, accel)
+        ble.gatts_notify(conn, gyro)
+        ble.gatts_notify(conn, force)
     time.sleep_ms(250)
     if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
         print("Going to sleep")
