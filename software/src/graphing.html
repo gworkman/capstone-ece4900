@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Bosu Ballers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"
+        integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
+        crossorigin="anonymous"></script>
+    <script>
+        var accel_chart = null;
+        var gyro_chart = null;
+        var force_chart = null;
+        var webSocket = new WebSocket('ws://localhost:8888');
+        webSocket.onmessage = function (event) {
+            var msg = JSON.parse(event.data);
+            console.log(msg.data);
+            if (accel_chart != null) {
+                accel_chart.data.datasets[0].data.push(msg.data[0]);
+                accel_chart.data.datasets[1].data.push(msg.data[1]);
+                accel_chart.data.datasets[2].data.push(msg.data[2]);
+
+                gyro_chart.data.datasets[0].data.push(msg.data[3]);
+                gyro_chart.data.datasets[1].data.push(msg.data[4]);
+                gyro_chart.data.datasets[2].data.push(msg.data[5]);
+
+                force_chart.data.datasets[0].data.push(msg.data[6]);
+
+                if (accel_chart.data.datasets[0].data.length > accel_chart.data.labels.length) {
+                    accel_chart.data.datasets.forEach((dataset) => {
+                        dataset.data.shift();
+                    });
+                    gyro_chart.data.datasets.forEach((dataset) => {
+                        dataset.data.shift();
+                    });
+                    force_chart.data.datasets[0].data.shift();
+                }
+
+
+                accel_chart.update(0);
+                gyro_chart.update(0);
+                force_chart.update(0);
+            }
+        }
+
+        window.addEventListener('load', (event) => {
+            accel_chart = new Chart(document.getElementById('accel').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [...Array(100).keys()],
+                    datasets: [{
+                        data: [],
+                        label: "Accelerometer X",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }, {
+                        data: [],
+                        label: "Accelerometer Y",
+                        borderColor: "#8e5ea2",
+                        fill: false
+                    }, {
+                        data: [],
+                        label: "Accelerometer Z",
+                        borderColor: "#3cba9f",
+                        fill: false
+                    }
+                    ]
+                }
+            });
+            gyro_chart = new Chart(document.getElementById('gyro').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [...Array(100).keys()],
+                    datasets: [{
+                        data: [],
+                        label: "Gyroscope X",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }, {
+                        data: [],
+                        label: "Gyroscope Y",
+                        borderColor: "#8e5ea2",
+                        fill: false
+                    }, {
+                        data: [],
+                        label: "Gyroscope Z",
+                        borderColor: "#3cba9f",
+                        fill: false
+                    }
+                    ]
+                }
+            });
+            force_chart = new Chart(document.getElementById('force').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [...Array(100).keys()],
+                    datasets: [{
+                        data: [],
+                        label: "Force Reading",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }
+                    ]
+                }
+            });
+        });
+
+
+    </script>
+</head>
+
+<body>
+    <canvas id="accel" width="400" height="100"></canvas>
+    <canvas id="gyro" width="400" height="100"></canvas>
+    <canvas id="force" width="400" height="100"></canvas>
+</body>
+
+</html>
