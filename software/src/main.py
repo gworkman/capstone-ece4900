@@ -36,6 +36,15 @@ def bt_irq(event, data):
     else:
         print('[bluetooth] received event {}'.format(event))
 
+# interrupt function
+
+def pin_sleep(p):
+    print("Going to sleep (pin press).")
+    # Reconfigure pin as wakeup pin
+    esp32.wake_on_ext0(pin = wakeSleepPin, level = esp32.WAKEUP_ANY_HIGH)
+    # Wait half a second for button debounce
+    time.sleep_ms(500)
+    machine.deepsleep()
 
 # entrypoint
 i2c = I2C(0)
@@ -44,6 +53,7 @@ ble = bluetooth.BLE()
 ble.active(True)
 ble.irq(bt_irq)
 ble.config(gap_name='Bosu')
+print('hello world')
 
 # configure the services that will be advertised
 ACCEL_UUID = bluetooth.UUID('7ED5A5BC-8013-4753-B199-0A364D52E5DE')
@@ -60,13 +70,17 @@ connections = set()
 payload = advertising_payload(name='Bosu Ballers')
 ble.gap_advertise(500000, adv_data=payload)
 
-#wake pin
-wakepin = Pin(14, Pin.IN, Pin.PULL_DOWN)
-esp32.wake_on_ext0(pin = wakepin, level = esp32.WAKEUP_ANY_HIGH)
+#wake/sleep pin
+wakeSleepPin = Pin(14, Pin.IN, Pin.PULL_DOWN)
+
+# Set up GPIO pin to put to sleep
+wakeSleepPin.irq(trigger = Pin.IRQ_FALLING, handler = pin_sleep)
+
+# Boolean for checking bluetooth connection
 hasConnection = False
-print("hello world")
 
 deadline = time.ticks_add(time.ticks_ms(), THIRTY_SECONDS)
+
 while True:
     #Run if there is a connection, then recheck to see if connection was dropped. If dropped, set timer before deepsleep
     if hasConnection:
@@ -76,8 +90,13 @@ while True:
     for conn in connections:
         hasConnection = True
         xyz = imu.accel.xyz
-        ble.gatts_notify(conn, accel, struct.pack('<fff', *xyz))
+        ble.gatts_write(accel, struct.pack('<fff', *xyz))
+        ble.gatts_notify(conn, accel)
     time.sleep_ms(250)
     if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
         print("Going to sleep")
+        # Reconfigure pin as wakeup pin
+        esp32.wake_on_ext0(pin = wakeSleepPin, level = esp32.WAKEUP_ANY_HIGH)
+        # Wait half a second for button debounce
+        time.sleep_ms(500)
         machine.deepsleep()
