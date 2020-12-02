@@ -13,17 +13,17 @@
         var webSocket = new WebSocket('ws://localhost:8888');
         webSocket.onmessage = function (event) {
             var msg = JSON.parse(event.data);
-            console.log(msg.data);
+            console.log(msg.accel_data);
             if (accel_chart != null) {
-                accel_chart.data.datasets[0].data.push(msg.data[0]);
-                accel_chart.data.datasets[1].data.push(msg.data[1]);
-                accel_chart.data.datasets[2].data.push(msg.data[2]);
+                accel_chart.data.datasets[0].data.push(msg.accel_data[0]);
+                accel_chart.data.datasets[1].data.push(msg.accel_data[1]);
+                accel_chart.data.datasets[2].data.push(msg.accel_data[2]);
 
-                gyro_chart.data.datasets[0].data.push(msg.data[3]);
-                gyro_chart.data.datasets[1].data.push(msg.data[4]);
-                gyro_chart.data.datasets[2].data.push(msg.data[5]);
+                gyro_chart.data.datasets[0].data.push(msg.gyro_data[0]);
+                gyro_chart.data.datasets[1].data.push(msg.gyro_data[1]);
+                gyro_chart.data.datasets[2].data.push(msg.gyro_data[2]);
 
-                force_chart.data.datasets[0].data.push(msg.data[6]);
+                force_chart.data.datasets[0].data.push(msg.force_data);
 
                 if (accel_chart.data.datasets[0].data.length > accel_chart.data.labels.length) {
                     accel_chart.data.datasets.forEach((dataset) => {
