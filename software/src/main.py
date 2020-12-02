@@ -52,8 +52,8 @@ ble = bluetooth.BLE()
 adc = ADC(Pin(34))
 ble.active(True)
 ble.irq(bt_irq)
-ble.config(gap_name='Bosu')
-print('hello world')
+ble.config(gap_name='Bosu Ballers')
+print([hex(item) for item in ble.config('mac')])
 
 # configure the services that will be advertised
 ACCEL_UUID = bluetooth.UUID('7ED5A5BC-8013-4753-B199-0A364D52E5DE')
@@ -78,7 +78,7 @@ connections = set()
 
 # this advertising payload can't be too long
 payload = advertising_payload(name='Bosu Ballers')
-ble.gap_advertise(500000, adv_data=payload)
+ble.gap_advertise(50000, adv_data=payload)
 
 #wake/sleep pin
 wakeSleepPin = Pin(14, Pin.IN, Pin.PULL_DOWN)
@@ -96,6 +96,7 @@ while True:
     if hasConnection:
         hasConnection = conn in connections
         if not hasConnection:
+            ble.gap_advertise(50000, adv_data=payload)
             deadline = time.ticks_add(time.ticks_ms(),TEN_SECONDS)
     for conn in connections:
         hasConnection = True
@@ -109,10 +110,10 @@ while True:
         ble.gatts_notify(conn, gyro)
         ble.gatts_notify(conn, force)
     time.sleep_ms(250)
-    if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
-        print("Going to sleep")
-        # Reconfigure pin as wakeup pin
-        esp32.wake_on_ext0(pin = wakeSleepPin, level = esp32.WAKEUP_ANY_HIGH)
-        # Wait half a second for button debounce
-        time.sleep_ms(500)
-        machine.deepsleep()
+    # if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
+    #     print("Going to sleep")
+    #     # Reconfigure pin as wakeup pin
+    #     esp32.wake_on_ext0(pin = wakeSleepPin, level = esp32.WAKEUP_ANY_HIGH)
+    #     # Wait half a second for button debounce
+    #     time.sleep_ms(500)
+    #     machine.deepsleep()
