@@ -8,10 +8,10 @@ Title "ECE 4900 Team 7"
 Date "2020-09-29"
 Rev "V1.0"
 Comp "The Ohio State University"
-Comment1 "Ben Kowalski"
-Comment2 "Dan Meier"
-Comment3 "Andrew Tian"
-Comment4 "Gus Workman"
+Comment1 "Dan Meier"
+Comment2 "Gus Workman"
+Comment3 ""
+Comment4 ""
 $EndDescr
 $Comp
 L ESP32-DEVKITC:ESP32-DEVKITC U2
