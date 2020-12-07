@@ -1,2 +1,0 @@
-[1022/124053.199:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\Dan Meier\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\4e9f6055-8e1e-4f74-9836-db9423535910: The system cannot find the path specified. (0x3)
-[1022/124053.772:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\Dan Meier\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\2ec00f69-8913-42df-84d1-8533a76c7d41: The system cannot find the path specified. (0x3)

@@ -15,7 +15,6 @@ from ble_advertising import advertising_payload
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
 THIRTY_SECONDS = const(30000)
-TEN_SECONDS = const(10000)
 
 # functions
 
@@ -56,23 +55,13 @@ ble.config(gap_name='Bosu Ballers')
 print([hex(item) for item in ble.config('mac')])
 
 # configure the services that will be advertised
-ACCEL_UUID = bluetooth.UUID('7ED5A5BC-8013-4753-B199-0A364D52E5DE')
-ACCEL_CHAR = (bluetooth.UUID('F477FD95-41F0-4C73-9093-5DA7DC624DF0'),
-              bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
-ACCEL_SERVICE = (ACCEL_UUID, (ACCEL_CHAR,),)
+DATA_UUID = bluetooth.UUID('7ED5A5BC-8013-4753-B199-0A364D52E5DE')
+DATA_CHAR = (bluetooth.UUID('F477FD95-41F0-4C73-9093-5DA7DC624DF0'),
+              bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY)
+DATA_SERVICE = (DATA_UUID, (DATA_CHAR,),)
 
-GYRO_UUID = bluetooth.UUID('a29c1085-11cb-4643-8ddc-19883e67afeb')
-GYRO_CHAR = (bluetooth.UUID('495d7e2c-a9b1-42ab-ab3a-af75dcefca06'),
-              bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
-GYRO_SERVICE = (GYRO_UUID, (GYRO_CHAR,),)
-
-FORCE_UUID = bluetooth.UUID('e55a7bcb-e58e-4582-a439-adfc2f0b14b9')
-FORCE_CHAR = (bluetooth.UUID('fed668b3-5471-4797-a2e5-c0e4760b7321'),
-              bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
-FORCE_SERVICE = (FORCE_UUID, (FORCE_CHAR,),)
-
-SERVICES = (ACCEL_SERVICE,GYRO_SERVICE,FORCE_SERVICE,)
-((accel,),(gyro,),(force,),) = ble.gatts_register_services(SERVICES)
+SERVICES = (DATA_SERVICE,)
+((data_srv,),) = ble.gatts_register_services(SERVICES)
 
 connections = set()
 
@@ -81,7 +70,7 @@ payload = advertising_payload(name='Bosu Ballers')
 ble.gap_advertise(50000, adv_data=payload)
 
 #wake/sleep pin
-wakeSleepPin = Pin(14, Pin.IN, Pin.PULL_DOWN)
+wakeSleepPin = Pin(12, Pin.IN, Pin.PULL_DOWN)
 
 # Set up GPIO pin to put to sleep
 wakeSleepPin.irq(trigger = Pin.IRQ_FALLING, handler = pin_sleep)
@@ -97,23 +86,23 @@ while True:
         hasConnection = conn in connections
         if not hasConnection:
             ble.gap_advertise(50000, adv_data=payload)
-            deadline = time.ticks_add(time.ticks_ms(),TEN_SECONDS)
+            deadline = time.ticks_add(time.ticks_ms(),THIRTY_SECONDS)
     for conn in connections:
         hasConnection = True
         accel_xyz = imu.accel.xyz
         gyro_xyz = imu.gyro.xyz
         force_val = adc.read()
-        ble.gatts_write(accel, struct.pack('<fff', *accel_xyz))
-        ble.gatts_write(gyro, struct.pack('<fff', *gyro_xyz))
-        ble.gatts_write(force, struct.pack('<H', force_val))
-        ble.gatts_notify(conn, accel)
-        ble.gatts_notify(conn, gyro)
-        ble.gatts_notify(conn, force)
+        accel_buf = struct.pack('<fff', *accel_xyz)
+        gyro_buf = struct.pack('<fff', *gyro_xyz)
+        force_buf = struct.pack('<H', force_val)
+        buf = accel_buf + gyro_buf + force_buf
+        ble.gatts_write(data_srv, buf)
+        ble.gatts_notify(conn, data_srv)
     time.sleep_ms(250)
-    # if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
-    #     print("Going to sleep")
-    #     # Reconfigure pin as wakeup pin
-    #     esp32.wake_on_ext0(pin = wakeSleepPin, level = esp32.WAKEUP_ANY_HIGH)
-    #     # Wait half a second for button debounce
-    #     time.sleep_ms(500)
-    #     machine.deepsleep()
+    if not hasConnection and time.ticks_diff(deadline,time.ticks_ms()) <= 0:
+        print("Going to sleep")
+        # Reconfigure pin as wakeup pin
+        esp32.wake_on_ext0(pin = wakeSleepPin, level = esp32.WAKEUP_ANY_HIGH)
+        # Wait half a second for button debounce
+        time.sleep_ms(500)
+        machine.deepsleep()
