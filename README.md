@@ -75,3 +75,8 @@ One thing to keep in mind while changing the board layout design is the position
 There are several extra IO pins that are exposed to allow for expansions of the board to other features. IO pin 12 is currently used in the prototype of the firmware as a reset button. This feature is configurable in the firmware.
 
 Finally, some of the pins on the ESP32 can only be used as inputs. These pins are labelled in a note within the schematic.
+
+## Rendering
+The below image is a rendering of the final design of the hardware for this project. The rendering shows almost all of the passive components on the board, with most of the chips. It does not include the connector for the acoustics sensor (bottom right) or the ESP32 development board (which is shown with the outline). It includes mounting holes in each of the corners for securely fastening the device.
+
+ ![PCB Rendering](images/hardware-rendering.png)
